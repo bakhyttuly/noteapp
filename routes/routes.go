@@ -14,12 +14,16 @@ func SetupRoutes(r *gin.Engine) {
 	auth := r.Group("/")
 	auth.Use(middleware.AuthMiddleware())
 	{
+		// ── Notes
 		auth.GET("/notes", handlers.GetNotes)
 		auth.GET("/notes/:id", handlers.GetNoteByID)
 		auth.POST("/notes", handlers.CreateNote)
 		auth.PUT("/notes/:id", handlers.UpdateNote)
 		auth.DELETE("/notes/:id", handlers.DeleteNote)
 
+		auth.GET("/notes/search", handlers.SearchNotes)
+
+		// ── Categories
 		auth.GET("/categories", handlers.GetCategories)
 		auth.GET("/categories/:id", handlers.GetCategoryByID)
 		auth.POST("/categories", handlers.CreateCategory)

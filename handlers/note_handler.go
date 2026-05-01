@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"noteapp/clients"
+	"os"
 )
 
 func GetNotes(c *gin.Context) {
@@ -131,4 +133,35 @@ func DeleteNote(c *gin.Context) {
 
 	config.DB.Delete(&note)
 	c.JSON(http.StatusOK, gin.H{"message": "Note deleted successfully"})
+}
+
+var searchClient = clients.NewSearchClient(getSearchServiceURL())
+
+func getSearchServiceURL() string {
+	url := os.Getenv("SEARCH_SERVICE_URL")
+	if url == "" {
+		return "http://localhost:9090"
+	}
+	return url
+}
+
+func SearchNotes(c *gin.Context) {
+	query := c.Query("q")
+	if query == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Query parameter 'q' is required"})
+		return
+	}
+
+	categoryID := c.Query("category_id")
+
+	result, err := searchClient.Search(query, categoryID)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{
+			"error":   "SearchService unavailable",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }
